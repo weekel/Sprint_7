@@ -1,6 +1,7 @@
 package tests;
 
 import io.qameta.allure.Description;
+import io.qameta.allure.junit4.DisplayName;
 import ru.praktikumservices.qascooter.client.CourierCreationApiClient;
 import ru.praktikumservices.qascooter.client.CourierLoginApiClient;
 import ru.praktikumservices.qascooter.assertions.CourierCreationAssertions;
@@ -9,17 +10,20 @@ import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import com.github.javafaker.Faker;
 
-
+@DisplayName("Тесты на создание курьера")
 public class CourierCreationTests {
     private final CourierCreationApiClient courierCreationClient = new CourierCreationApiClient();
     private final CourierLoginApiClient courierLoginClient = new CourierLoginApiClient();
     private Courier testCourier;
     private int createdCourierId;
 
-    private String login = "moonlight";
-    private String password = "1234";
-    private String firstname = "Маша";
+    private final Faker faker = new Faker();
+
+    private String login = faker.name().username();;
+    private String password = faker.internet().password();
+    private String firstname = faker.name().firstName();
 
 
     @Before
@@ -27,6 +31,7 @@ public class CourierCreationTests {
         testCourier = new Courier(login, password, firstname);
     }
 
+    @DisplayName("Успешный вход курьера в систему")
     @Description("Успешное создание курьера при передаче валидных login, password и firstname")
     @Test
     public void testCreateCourierSuccessfully() {
@@ -35,7 +40,8 @@ public class CourierCreationTests {
         CourierCreationAssertions.assertCourierCreated(response);
     }
 
-    @Description("Получение ошибки при попытке создать уже существующего курьера")
+    @DisplayName("Создание курьера с уже существующим логином возвращает 409")
+    @Description("Получение ошибки и код 409 при попытке создать уже существующего курьера")
     @Test
     public void testCreateExistingCourierReturns409() {
         courierCreationClient.createCourier(testCourier);
@@ -44,7 +50,8 @@ public class CourierCreationTests {
         CourierCreationAssertions.assertDuplicateCourierError(response);
     }
 
-    @Description("Получение ошибки при попытке создать курьера без пароля")
+    @DisplayName("Создание курьера без пароля возвращает ошибку 400")
+    @Description("Получение ошибки и код 400 при попытке создать курьера без пароля")
     @Test
     public void testCreateCourierWithoutPasswordReturns400() {
         testCourier.setPassword(null);
@@ -54,7 +61,8 @@ public class CourierCreationTests {
         CourierCreationAssertions.assertMissingFieldError(response);
     }
 
-    @Description("Получение ошибки при попытке создать курьера без логина")
+    @DisplayName("Создание курьера без пароля возвращает ошибку 400")
+    @Description("Получение ошибки и код 400 при попытке создать курьера без логина")
     @Test
     public void testCreateCourierWithoutLoginReturns400() {
         testCourier.setLogin(null);
@@ -64,7 +72,8 @@ public class CourierCreationTests {
         CourierCreationAssertions.assertMissingFieldError(response);
     }
 
-    @Description("Успешное создание курьера без параметра firstname")
+    @DisplayName("Успешное создание курьера без имени")
+    @Description("Успешное создание курьера без параметра firstname — код ответа 201")
     @Test
     public void testCreateCourierWithoutFirstnameReturns201() {
         testCourier.setFirstname(null);
